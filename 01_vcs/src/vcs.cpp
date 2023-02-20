@@ -11,7 +11,7 @@
 
 #include "vcs.h"
 
-namespace fs = std::filesystem;
+namespace fs = filesystem;
 
 //  init command
 
@@ -33,8 +33,17 @@ bool vcs_init() {
 //  commit command
 
 bool vcs_commit(const std::string& message) {
-  std::cout << "Коммит изменений с сообщением: " << message << std::endl;
+  int snapshot_id = get_next_snapshot_id();
+  string snapshot_dir = "./archive/snapshot_" + to_string(snapshot_id);
+  create_snapshot();
 
+  auto commit_log_file_path = fs::path(snapshot_dir) / string("commit.log");
+  ofstream commit_log_file(commit_log_file_path);
+  commit_log_file << message << "\n";
+  commit_log_file.close();
+  if(snapshot_id != 0)
+    std::cout << "Коммит изменений с сообщением: " << message << std::endl;
+    
   return true;
 }
 
