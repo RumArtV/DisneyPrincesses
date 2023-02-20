@@ -1,42 +1,39 @@
-#include <string>
 #include <iostream>
 #include <filesystem>
-#include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 #include <algorithm>
 #include <chrono>
 #include <cstring>
-#include <dirent.h>
 #include <sstream>
-#include <unistd.h>
-#include <sys/stat.h>
+#include <unordered_map>
 
 #include "vcs.h"
 
 namespace fs = std::filesystem;
 
+//  init command
+
 bool vcs_init() {
   fs::path archive_dir = ".archive";
   if (fs::exists(archive_dir) && fs::is_directory(archive_dir)) {
+    std::cout << "Репозиторий уже существует" << std::endl;
     return false;
   }
 
   fs::create_directory(archive_dir);
-  std::cout << "Created directory " << archive_dir << std::endl;
+  std::cout << "Создан репозиторий в " << archive_dir << std::endl;
 
   create_snapshot();
 
   return true;
 }
 
+//  commit command
 
 bool vcs_commit(const std::string& message) {
-  // Code to update the version control repository with the changes
-
-  // For this example, we'll just output a message
-  std::cout << "Committing changes with message: " << message << std::endl;
+  std::cout << "Коммит изменений с сообщением: " << message << std::endl;
 
   return true;
 }
@@ -64,11 +61,9 @@ void copy_from_to(const fs::path &src_path, const fs::path &dst_path) {
 
 std::string compute_file_hash(const fs::path &path) {
   std::ifstream src(path, std::ios::binary);
-  src.clear();
-  src.seekg(0, std::ios::beg);
-  std::istreambuf_iterator<char> src_begin(src);
-  std::istreambuf_iterator<char> src_end;
-  std::string data(src_begin, src_end);
+  
+  std::string data((std::istreambuf_iterator<char>(src)),
+                    std::istreambuf_iterator<char>());
   std::hash<std::string> hash_fn;
   std::size_t hash_value = hash_fn(data);
 
@@ -100,6 +95,8 @@ std::unordered_map<std::string, std::string> create_snapshot() {
 
   return file_hashes;
 }
+
+//  log command
 
 bool vcs_log() {
   std::cout << "Log message" << std::endl;
